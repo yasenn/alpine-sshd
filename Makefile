@@ -20,10 +20,10 @@ help: ## This help.
 # DOCKER TASKS
 # Build the container
 build: ## Build the container
-	docker build --build-arg SSH_PUBKEY="$$(cat ~/.ssh/id_rsa.pub)" -t $(APP_NAME) .
+	docker build --build-arg SSH_PUBKEY="$$(cat $(SSH_PUBKEY_FILE))" -t $(APP_NAME) .
 
 build-nc: ## Build the container without caching
-	docker build --no-cache --build-arg SSH_PUBKEY="$$(cat ~/.ssh/id_rsa.pub)" -t $(APP_NAME) .
+	docker build --no-cache --build-arg SSH_PUBKEY="$$(cat $(SSH_PUBKEY_FILE))" -t $(APP_NAME) .
 
 run: ## Run container on port configured in `config.env`
 	docker run -d --rm --env-file=./config.env -p=$(PORT):22 --name="$(APP_NAME)" $(APP_NAME)
