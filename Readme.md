@@ -1,38 +1,64 @@
 # Alpine ssh server
 
-## Instructions
+`Dockerfile` with `openssh` and your pubkey as `authorized_keys`
 
-### Key based usage (prefered)
+## About
 
-Copy the id_rsa.pub from your workstation to your dockerhost.
-On the dockerhost create a volume to keep your authorized_keys.
-```bash
-tar cv --files-from /dev/null | docker import - scratch
-docker create -v /root/.ssh --name ssh-container scratch /bin/true
-docker cp id_rsa.pub ssh-container:/root/.ssh/authorized_keys
+This `Dockerfile` builds an image with embedded pubkey from your `$HOME` directory.
+Pubkey filename declared in `config.env`:
+
+```
+SSH_PUBKEY_FILE=~/.ssh/id_rsa.pub
 ```
 
-For ssh key forwarding use ssh-agent on your workstation.
-```bash
-ssh-agent
-ssh-add id_rsa
+## Quickstart
+
+One-line start with `make up`:
+
+```
+git clone https://github.com/yasenn/alpine-sshd
+cd alpine-sshd
+make up
 ```
 
-Then the start sshd service on the dockerhost (check the tags for alpine versions)
-```bash
-docker run -p 4848:22 --name alpine-sshd --hostname alpine-sshd --volumes-from ssh-container  -d danielguerra/alpine-sshd
+## Demo
+
+[![asciicast](https://asciinema.org/a/pb8YcxdPGo4mGtQVQmHQutQ6L.png)](https://asciinema.org/a/pb8YcxdPGo4mGtQVQmHQutQ6L)
+
+  
+## Usage/Examples
+
+```
+$ make
+> help                           This help.
+> build                          Build the container
+> build-nc                       Build the container without caching
+> run                            Run container on port configured in `config.env`
+> up                             Build & Run container on port configured in `config.env`
+> stop                           Stop a running container
+> test                           Checks if sshd in container works correctly
 ```
 
-### Password based
+  
+## Running Tests
+
+To run tests, run the following command
 
 ```bash
-docker run -p 4848:22 --name alpine-sshd --hostname alpine-sshd -d danielguerra/alpine-sshd
-docker exec -ti alpine-sshd passwd
+  make stop
+  make build
+  make run
+  make test
 ```
 
-### From your workstation
+  
+## Acknowledgements
 
-ssh to your new docker environment, with an agent the -i option is not needed
-```bash
-ssh -p 4848 -i id_rsa root@<dockerhost>
-```
+ - [danielguerra69/alpine-sshd: alpine ssh server](https://github.com/danielguerra69/alpine-sshd)
+ - [Simple Makefile to build, run, tag and publish a docker containier to AWS-ECR](https://gist.github.com/mpneuried/0594963ad38e68917ef189b4e6a269db)
+ - [Self-Documented Makefile](https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html)
+
+  
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
