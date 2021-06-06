@@ -29,7 +29,12 @@ run: ## Run container on port configured in `config.env`
 	docker run -d --rm --env-file=./config.env -p=$(PORT):22 --name="$(APP_NAME)" $(APP_NAME)
 
 
-up: build run ## Build & Run container on port configured in `config.env`
+up: build run test ## Build & Run container on port configured in `config.env`
 
 stop: ## Stop a running container
 	docker stop $(APP_NAME)
+
+test: ## Checks if sshd in container works correctly
+	@ssh root@"$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' alpine-sshd)" 'echo "Hostname of alpine-sshd container is $$(hostname)"' 2>/dev/null \
+		&& echo "IP is $$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' alpine-sshd)" \
+		&& echo "You may connect to it: \`ssh root@'$$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' alpine-sshd)"\`
