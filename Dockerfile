@@ -1,14 +1,19 @@
 FROM alpine:edge
-MAINTAINER Daniel Guerra <daniel.guerra69@gmail.com>
+MAINTAINER yasenn 
 
-# add openssh and clean
+ARG SSH_PUBKEY
+ENV SSH_PUBKEY=$SSH_PUBKEY
+
 RUN apk add --update openssh \
-&& rm  -rf /tmp/* /var/cache/apk/*
-# add entrypoint script
-ADD docker-entrypoint.sh /usr/local/bin
-#make sure we get fresh keys
-RUN rm -rf /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key
+&& rm  -rf /tmp/* /var/cache/apk/* \
+&& ssh-keygen -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key >/dev/null \
+&& ssh-keygen -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key >/dev/null \
+&& mkdir /root/.ssh/  \
+&& mkdir /var/run/sshd \
+&& echo "$SSH_PUBKEY" > /root/.ssh/authorized_keys \
+&& chmod 0700 /root/.ssh \
+&& chmod 0600 /root/.ssh/authorized_keys \
+&& echo "root:$(head -32 /dev/urandom | md5sum)"|chpasswd
 
 EXPOSE 22
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["/usr/sbin/sshd","-D"]
+ENTRYPOINT ["/usr/sbin/sshd","-D"]
